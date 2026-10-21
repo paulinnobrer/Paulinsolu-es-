@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0756c9">
+<title>Paulinsoluções | Buscador de clientes</title>
+<style>
+:root{--blue:#0756c9;--blue2:#0b75f0;--navy:#082b61;--pale:#eef5ff;--ink:#17243b;--muted:#61718a;--line:#d9e5f5;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f5f8fd;color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(125deg,#062b69,#0877ef);color:white;padding:26px 18px 32px}
+.wrap{max-width:1100px;margin:auto}.brand{font-weight:900;font-size:clamp(25px,5vw,38px);letter-spacing:-.8px}.brand span{color:#9dd0ff}.sub{margin:6px 0 0;color:#e5f0ff}
+main{max-width:1100px;margin:-14px auto 40px;padding:0 14px}.panel,.lead{background:white;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 25px #123a7010}
+.panel{padding:18px;margin-bottom:18px}.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+label{display:block;font-size:13px;font-weight:750;color:#43546e;margin-bottom:6px}input,select{width:100%;padding:12px;border:1px solid #c8d8ef;border-radius:11px;background:white;font:inherit;color:var(--ink)}
+button,.button{border:0;border-radius:11px;background:var(--blue);color:white;font-weight:800;padding:12px 16px;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center;gap:7px}
+button:hover,.button:hover{background:#0645a5}.secondary{background:#eaf2ff;color:var(--blue)}.secondary:hover{background:#dbe9ff}.searchrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}.searchrow button{flex:1;min-width:170px}
+.note{font-size:13px;color:var(--muted);margin:12px 0 0}.status{margin:16px 0;font-weight:700;color:var(--navy)}.status.error{color:#a12727}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0}.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.lead{padding:16px;min-width:0}.lead h3{margin:0 0 6px;font-size:18px;color:var(--navy)}.tag{display:inline-block;background:#e8f2ff;color:#0756c9;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;margin:0 4px 8px 0}.details{color:#53647c;font-size:14px;overflow-wrap:anywhere}.details div{margin:5px 0}.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.actions a{font-size:13px;padding:9px 11px}.empty{background:white;border:1px dashed #b9cce8;border-radius:16px;padding:28px;text-align:center;color:var(--muted);grid-column:1/-1}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:760px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.results{grid-template-columns:1fr}}
+@media(max-width:400px){.controls{grid-template-columns:1fr}.searchrow{display:grid}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">Paulin<span>soluções</span> 💙</div><p class="sub">Buscador de possíveis clientes para criação de sites</p></div></header>
+<main>
+<section class="panel">
+  <div class="controls">
+    <div><label for="city">Cidade / região</label><input id="city" value="Horizonte, Ceará, Brasil"></div>
+    <div><label for="kind">Tipo de estabelecimento</label><select id="kind"><option value="all">Todos os tipos</option><option value="food">Restaurantes e lanchonetes</option><option value="beauty">Beleza e barbearias</option><option value="health">Saúde</option><option value="shop">Lojas e mercados</option><option value="service">Serviços diversos</option><option value="stay">Hotéis e pousadas</option></select></div>
+    <div><label for="limit">Resultados por busca</label><select id="limit"><option>20</option><option>10</option><option>30</option><option>50</option></select></div>
+    <div><label for="filter">Prioridade</label><select id="filter"><option value="no-site">Priorizar sem site</option><option value="all">Mostrar todos</option><option value="has-site">Com site cadastrado</option></select></div>
+  </div>
+  <div class="searchrow"><button id="search">🔎 Buscar estabelecimentos</button><button id="export" class="secondary">⬇ Exportar CSV</button></div>
+  <p class="note">Usa dados públicos do OpenStreetMap. A quantidade e os contatos disponíveis variam conforme os dados cadastrados na região. “Sem site” significa que não foi encontrado um site no cadastro — não garante que a empresa não tenha site.</p>
+</section>
+<div id="status" class="status" role="status">Pronto para pesquisar. Clique em “Buscar estabelecimentos”.</div>
+<div class="toolbar"><strong id="count">0 estabelecimentos</strong><span class="note">Confira os dados antes de entrar em contato.</span></div>
+<section id="results" class="results"><div class="empty">Seus resultados aparecerão aqui.</div></section>
+</main>
+<footer>Paulinsoluções • Ferramenta de prospecção • Dados públicos do OpenStreetMap</footer>
+<script>
+const $=id=>document.getElementById(id);
+let leads=[];
+const presets={
+ all:'node["shop"];way["shop"];node["office"];way["office"];node["craft"];way["craft"];node["amenity"~"restaurant|cafe|fast_food|bar|pub|pharmacy|clinic|doctors|dentist|bank|school|kindergarten|fuel|car_repair|hairdresser|beauty_salon|hotel|marketplace"];way["amenity"~"restaurant|cafe|fast_food|bar|pub|pharmacy|clinic|doctors|dentist|bank|school|kindergarten|fuel|car_repair|hairdresser|beauty_salon|hotel|marketplace"];node["tourism"~"hotel|guest_house"];way["tourism"~"hotel|guest_house"]',
+ food:'node["amenity"~"restaurant|cafe|fast_food|bar|pub"];way["amenity"~"restaurant|cafe|fast_food|bar|pub"]',
+ beauty:'node["shop"="hairdresser"];way["shop"="hairdresser"];node["shop"="beauty"];way["shop"="beauty"];node["craft"="hairdresser"];way["craft"="hairdresser"];node["amenity"="beauty_salon"];way["amenity"="beauty_salon"]',
+ health:'node["amenity"~"pharmacy|clinic|doctors|dentist|hospital"];way["amenity"~"pharmacy|clinic|doctors|dentist|hospital"]',
+ shop:'node["shop"];way["shop"]',
+ service:'node["office"];way["office"];node["craft"];way["craft"];node["amenity"~"car_repair|bank|fuel"];way["amenity"~"car_repair|bank|fuel"]',
+ stay:'node["tourism"~"hotel|guest_house|hostel"];way["tourism"~"hotel|guest_house|hostel"]'
+};
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function val(tags,...keys){for(const k of keys){if(tags[k])return tags[k]}return ''}
+function website(tags){return val(tags,'website','contact:website','url')}
+function phone(tags){return val(tags,'phone','contact:phone','mobile','contact:mobile')}
+function address(tags){let a=[val(tags,'addr:street'),val(tags,'addr:housenumber')].filter(Boolean).join(', ');let b=val(tags,'addr:suburb','addr:neighbourhood','addr:city');return [a,b].filter(Boolean).join(' — ')||val(tags,'addr:full')||'Endereço não informado'}
+function mapsUrl(l){return 'https://www.openstreetmap.org/?mlat='+l.lat+'&mlon='+l.lon+'#map=18/'+l.lat+'/'+l.lon}
+function phoneDigits(p){return (p||'').replace(/\D/g,'')}
+function whatsapp(p){let n=phoneDigits(p);if(n.length===10||n.length===11)n='55'+n;return n.length>=12?'https://wa.me/'+n:null}
+function typeName(t){return val(t,'shop','amenity','office','craft','tourism')||'Estabelecimento'}
+async function search(){
+ const city=$('city').value.trim();if(!city){$('status').textContent='Informe uma cidade ou região.';return}
+ $('search').disabled=true;$('status').className='status';$('status').textContent='Buscando a região e consultando os dados públicos…';$('results').innerHTML='<div class="empty">Carregando resultados…</div>';leads=[];
+ try{
+  const geo=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(city),{headers:{'Accept-Language':'pt-BR'}});
+  if(!geo.ok)throw Error('Não foi possível localizar a região. Tente novamente mais tarde.');
+  const places=await geo.json();if(!places.length)throw Error('Região não encontrada. Tente escrever cidade, estado e país.');
+  const p=places[0];let query='[out:json][timeout:35];('+presets[$('kind').value]+';);out center tags;';
+  // Use the geocoded area if available; otherwise use a radius around the city center.
+  const areaId=p.osm_type==='relation'?Number(p.osm_id)+3600000000:null;
+  if(areaId) query='[out:json][timeout:35];area('+areaId+')->.a;('+presets[$('kind').value].split(';').map(x=>x.replace(/^(node|way)/,'$1( area.a)')).join(';')+';);out center tags;';
+  else query='[out:json][timeout:35];('+presets[$('kind').value].split(';').map(x=>x+'(around:12000,'+p.lat+','+p.lon+')').join(';')+';);out center tags;';
+  let response;
+  for(const endpoint of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+   try{response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:query});if(response.ok)break}catch(e){}
+  }
+  if(!response||!response.ok)throw Error('A fonte de dados está ocupada. Aguarde um pouco e tente novamente.');
+  const data=await response.json();const seen=new Set();
+  leads=(data.elements||[]).map(e=>{const t=e.tags||{};return {id:e.type+e.id,name:val(t,'name','brand')||'',tags:t,lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon,phone:phone(t),website:website(t),address:address(t),kind:typeName(t)}})
+  .filter(l=>l.name&&l.lat&&l.lon).filter(l=>{if(seen.has(l.name+'|'+l.address))return false;seen.add(l.name+'|'+l.address);return true})
+  .sort((a,b)=>Number(!!a.website)-Number(!!b.website)).slice(0,100);
+  render();
+  $('status').textContent='Busca concluída. Os resultados vêm do OpenStreetMap e podem estar incompletos.';
+ }catch(err){$('status').className='status error';$('status').textContent=err.message||'Erro ao consultar os dados.';$('results').innerHTML='<div class="empty">Não foi possível carregar os resultados agora. Tente novamente mais tarde.</div>'}
+ finally{$('search').disabled=false}
+}
+function render(){
+ const filter=$('filter').value;let shown=leads.filter(l=>filter==='all'?true:filter==='has-site'?!!l.website:!l.website).slice(0,Number($('limit').value));
+ $('count').textContent=shown.length+' estabelecimento'+(shown.length===1?'':'s');
+ if(!shown.length){$('results').innerHTML='<div class="empty">Nenhum resultado com esse filtro. Experimente “Mostrar todos” ou outro tipo de estabelecimento.</div>';return}
+ $('results').innerHTML=shown.map(l=>{
+  const wa=whatsapp(l.phone), map=mapsUrl(l);
+  return `<article class="lead"><h3>${esc(l.name)}</h3><span class="tag">${esc(l.kind)}</span><span class="tag">${l.website?'Site cadastrado':'Site não informado'}</span><div class="details"><div>📍 ${esc(l.address)}</div><div>☎️ ${l.phone?esc(l.phone):'Telefone não cadastrado'}</div><div>🌐 ${l.website?`<a href="${esc(/^https?:\/\//i.test(l.website)?l.website:'https://'+l.website)}" target="_blank" rel="noopener">Abrir site</a>`:'Nenhum site listado nos dados públicos'}</div></div><div class="actions">${l.phone?`<a class="button" href="tel:${esc(l.phone)}">📞 Ligar</a>`:''}${wa?`<a class="button" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}<a class="button secondary" href="${map}" target="_blank" rel="noopener">Ver no mapa</a><button class="secondary" onclick="copyLead('${encodeURIComponent(l.name)}')">Copiar dados</button></div></article>`
+ }).join('');
+}
+window.copyLead=async encoded=>{const name=decodeURIComponent(encoded);const l=leads.find(x=>x.name===name);if(!l)return;const txt=`${l.name}\nTipo: ${l.kind}\nTelefone: ${l.phone||'Não informado'}\nEndereço: ${l.address}\nSite: ${l.website||'Não informado'}\nMapa: ${mapsUrl(l)}`;try{await navigator.clipboard.writeText(txt);$('status').textContent='Dados copiados.'}catch(e){prompt('Copie os dados:',txt)}};
+$('search').addEventListener('click',search);$('filter').addEventListener('change',render);$('limit').addEventListener('change',render);
+$('export').addEventListener('click',()=>{const rows=[['Nome','Tipo','Telefone','Endereço','Site','Latitude','Longitude'],...leads.map(l=>[l.name,l.kind,l.phone,l.address,l.website,l.lat,l.lon])];const csv=rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='paulinsolucoes-leads.csv';a.click();URL.revokeObjectURL(a.href)});
+</script>
+</body></html>
