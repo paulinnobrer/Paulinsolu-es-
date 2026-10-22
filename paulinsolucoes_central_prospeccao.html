@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PaulinSoluções • Central de Prospecção</title>
+<style>
+:root{--bg:#050b14;--panel:#0b1422;--panel2:#0f1d2d;--line:#1b3955;--blue:#149bea;--text:#f4f8fc;--muted:#91a9bf;--green:#20b96b;--yellow:#f2bd43;--red:#ef5c68}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#040912,#081526);color:var(--text);font:15px Inter,Arial,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}.app{display:flex;min-height:100vh}.side{width:240px;background:#07101c;border-right:1px solid var(--line);padding:22px 15px;position:fixed;inset:0 auto 0 0}.logo{font-weight:900;font-size:22px;margin:0 10px 25px}.logo span{color:var(--blue)}.nav button{display:block;width:100%;text-align:left;background:transparent;color:#a9bed1;border:0;border-radius:10px;padding:12px;margin:4px 0}.nav button.active,.nav button:hover{background:#0e2941;color:#fff}.main{margin-left:240px;width:calc(100% - 240px);padding:25px;max-width:1500px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center}.title h1{margin:0;font-size:28px}.title p{margin:7px 0;color:var(--muted)}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;color:#fff;background:var(--blue)}.btn.secondary{background:#1a3046}.btn.green{background:var(--green)}.btn.red{background:#7c2732}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:20px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.stat b{display:block;font-size:25px}.stat small{color:var(--muted)}.panel{background:rgba(11,20,34,.94);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.field input,.field select{width:100%;padding:12px;border-radius:9px;border:1px solid #284862;background:#07121f;color:#fff;outline:0}.notice{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:0}.layout{display:grid;grid-template-columns:1fr 1.1fr;gap:18px}.map{height:540px;border-radius:13px;overflow:hidden;background:#07111d;border:1px solid var(--line)}#map{width:100%;height:100%}.results{max-height:540px;overflow:auto}.lead{background:#0b1725;border:1px solid #193852;border-radius:13px;padding:14px;margin-bottom:10px}.leadhead{display:flex;justify-content:space-between;gap:10px}.lead h3{margin:0;font-size:16px}.muted{color:var(--muted);line-height:1.45;font-size:13px}.tag{display:inline-block;border-radius:30px;padding:4px 8px;background:#153149;color:#82d0ff;font-size:11px;margin-top:8px}.tag.red{background:#3c1920;color:#ff9da5}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.actions button,.actions a{border:0;border-radius:8px;padding:8px 10px;text-decoration:none;color:#fff;background:#1b354d;font-size:12px}.actions .wa{background:#159c5c}.actions .mapb{background:#315f9c}.empty{text-align:center;color:var(--muted);padding:40px}.view{display:none}.view.active{display:block}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid #183249;font-size:13px}.table th{color:#8fa9be}.pill{padding:5px 8px;border-radius:20px;font-size:11px;background:#18344b}.searching{display:none;color:#78caff;margin:10px 0}.mobile{display:none}
+@media(max-width:950px){.side{width:70px}.logo{font-size:0}.logo span{font-size:19px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:18px}.main{margin-left:70px;width:calc(100% - 70px)}.cards{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.map{height:320px}.filters{grid-template-columns:1fr 1fr}.filters .go{grid-column:1/-1}}
+@media(max-width:600px){.main{padding:14px}.top{align-items:flex-start}.title h1{font-size:22px}.cards{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.filters .go{grid-column:auto}.side{display:none}.main{margin:0;width:100%}.mobile{display:block}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="logo">Paulin<span>Soluções</span></div>
+  <div class="nav">
+    <button class="active" onclick="show('prospeccao',this)">🔎 Prospecção</button>
+    <button onclick="show('leads',this)">📋 Meus leads</button>
+    <button onclick="show('config',this)">⚙️ Configuração</button>
+  </div>
+</aside>
+
+<main class="main">
+<section id="prospeccao" class="view active">
+<div class="top"><div class="title"><h1>Central de Prospecção</h1><p>Encontre empresas que podem precisar de um site profissional.</p></div><button class="btn" onclick="exportCSV()">⬇ Exportar leads</button></div>
+
+<div class="cards">
+<div class="stat"><b id="sTotal">0</b><small>Leads encontrados</small></div>
+<div class="stat"><b id="sNoSite">0</b><small>Sem site informado</small></div>
+<div class="stat"><b id="sPhone">0</b><small>Com telefone</small></div>
+<div class="stat"><b id="sSaved">0</b><small>Salvos</small></div>
+</div>
+
+<div class="panel">
+<div class="filters">
+<div class="field"><label>API Key do Google Maps</label><input id="api" type="password" placeholder="Cole sua chave aqui"></div>
+<div class="field"><label>Segmento</label><input id="segment" value="barbearias" placeholder="Ex.: lavanderias"></div>
+<div class="field"><label>Cidade/região</label><input id="place" value="Eusébio, CE" placeholder="Ex.: Fortaleza, CE"></div>
+<div class="go" style="display:flex;align-items:end"><button class="btn" style="width:100%" onclick="searchPlaces()">🔎 Buscar empresas</button></div>
+</div>
+<div id="loading" class="searching">Pesquisando no Google Maps...</div>
+<p class="notice">O sistema considera “sem site informado” quando o Google Places não retorna um website. Isso não garante que a empresa realmente não tenha site. Confira o perfil antes de abordar o cliente.</p>
+</div>
+
+<div class="layout">
+<div class="map"><div id="map"></div></div>
+<div class="panel" style="margin:0"><div id="results" class="results"><div class="empty">Faça uma busca para visualizar os possíveis clientes.</div></div></div>
+</div>
+</section>
+
+<section id="leads" class="view">
+<div class="top"><div class="title"><h1>Meus leads</h1><p>Empresas que você salvou para entrar em contato.</p></div><button class="btn red" onclick="clearLeads()">Limpar salvos</button></div>
+<div class="panel"><div id="savedTable"></div></div>
+</section>
+
+<section id="config" class="view">
+<div class="title"><h1>Configuração</h1><p>Dados usados na sua abordagem comercial.</p></div>
+<div class="panel">
+<div class="field"><label>Nome da empresa</label><input id="bizName" value="PaulinSoluções"></div><br>
+<div class="field"><label>WhatsApp para contato</label><input id="bizWhats" placeholder="Ex.: 5585999999999"></div><br>
+<div class="field"><label>Mensagem padrão</label><textarea id="msg" style="width:100%;min-height:130px;padding:12px;border-radius:9px;border:1px solid #284862;background:#07121f;color:#fff">Olá! Tudo bem? Vi o perfil da sua empresa e percebi que vocês poderiam ter uma presença online ainda mais profissional. Eu trabalho com criação de sites de apresentação com botão de WhatsApp e informações do negócio. Posso te mostrar uma demonstração sem compromisso?</textarea><br><br>
+<button class="btn" onclick="saveConfig()">💾 Salvar configuração</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<script>
+let map,service,geocoder,infoWindow,markers=[],places=[];
+let saved=JSON.parse(localStorage.getItem('paulinLeads')||'[]');
+
+function show(id,btn){
+ document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ btn?.classList.add('active');
+ if(id==='leads')renderSaved();
+}
+function loadGoogle(key){
+ return new Promise((resolve,reject)=>{
+  if(window.google?.maps)return resolve();
+  let s=document.createElement('script');
+  s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&libraries=places';
+  s.async=true;s.defer=true;s.onload=resolve;s.onerror=()=>reject(new Error('Não foi possível carregar o Google Maps. Verifique a API Key.'));
+  document.head.appendChild(s);
+ });
+}
+async function searchPlaces(){
+ let key=api.value.trim(),seg=segment.value.trim(),loc=place.value.trim();
+ if(!key)return alert('Cole a API Key do Google Maps.');
+ if(!seg)return alert('Digite um segmento.');
+ loading.style.display='block';
+ try{
+  await loadGoogle(key);
+  if(!map){
+   map=new google.maps.Map(document.getElementById('map'),{center:{lat:-3.8922,lng:-38.4555},zoom:12,mapTypeControl:false,streetViewControl:false});
+   service=new google.maps.places.PlacesService(map);geocoder=new google.maps.Geocoder();infoWindow=new google.maps.InfoWindow();
+  }
+  geocoder.geocode({address:loc||'Brasil'},(r,status)=>{
+   if(status!=='OK'||!r?.[0]){loading.style.display='none';return alert('Local não encontrado.');}
+   let center=r[0].geometry.location;map.setCenter(center);map.setZoom(13);
+   service.textSearch({query:seg+' em '+loc,location:center,radius:20000},(res,status)=>{
+    loading.style.display='none';
+    if(status!=='OK'||!res?.length){results.innerHTML='<div class="empty">Nenhuma empresa encontrada.</div>';return;}
+    places=res.slice(0,60);renderResults();
+   });
+  });
+ }catch(e){loading.style.display='none';alert(e.message)}
+}
+function renderResults(){
+ markers.forEach(m=>m.setMap(null));markers=[];
+ let no=0,phone=0;results.innerHTML='';
+ places.forEach((p,i)=>{
+  let has=!!p.website;if(!has)no++;
+  let tel=p.formatted_phone_number||p.international_phone_number||'';if(tel)phone++;
+  let m=new google.maps.Marker({map,position:p.geometry.location,title:p.name});markers.push(m);
+  m.addListener('click',()=>infoWindow.setContent('<b>'+esc(p.name)+'</b><br>'+esc(p.formatted_address||'')).open(map,m));
+  let div=document.createElement('div');div.className='lead';
+  let maps=p.url||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.name+' '+(p.formatted_address||''));
+  let wa=tel?'https://wa.me/'+tel.replace(/\D/g,''):'#';
+  div.innerHTML='<div class="leadhead"><h3>'+esc(p.name)+'</h3><span class="pill">'+(has?'Site informado':'Sem site')+'</span></div>'+
+   '<div class="muted">📍 '+esc(p.formatted_address||'Endereço não informado')+'<br>📞 '+esc(tel||'Telefone não informado')+'</div>'+
+   '<span class="tag '+(has?'':'red')+'">'+(has?'🌐 Site informado':'⚠️ Prioridade de prospecção')+'</span>'+
+   '<div class="actions"><a class="mapb" href="'+maps+'" target="_blank">📍 Maps</a>'+
+   (tel?'<a class="wa" href="'+wa+'" target="_blank">💬 WhatsApp</a>':'')+
+   '<button onclick="saveLead('+i+')">⭐ Salvar</button><button onclick="copyLead('+i+')">📋 Copiar</button></div>';
+  results.appendChild(div);
+ });
+ sTotal.textContent=places.length;sNoSite.textContent=no;sPhone.textContent=phone;sSaved.textContent=saved.length;
+}
+function saveLead(i){
+ let p=places[i];if(saved.some(x=>x.place_id===p.place_id))return alert('Esse lead já está salvo.');
+ saved.push({place_id:p.place_id,name:p.name,address:p.formatted_address||'',phone:p.formatted_phone_number||p.international_phone_number||'',website:p.website||'',maps:p.url||'',status:'Novo'});
+ localStorage.setItem('paulinLeads',JSON.stringify(saved));sSaved.textContent=saved.length;alert('Lead salvo.');
+}
+function copyLead(i){
+ let p=places[i],t='Empresa: '+(p.name||'')+'\\nEndereço: '+(p.formatted_address||'')+'\\nTelefone: '+(p.formatted_phone_number||p.international_phone_number||'Não informado')+'\\nMaps: '+(p.url||'');
+ navigator.clipboard?.writeText(t);alert('Dados copiados.');
+}
+function renderSaved(){
+ if(!saved.length){savedTable.innerHTML='<div class="empty">Nenhum lead salvo ainda.</div>';return}
+ let rows=saved.map((p,i)=>'<tr><td><b>'+esc(p.name)+'</b><br><span class="muted">'+esc(p.address)+'</span></td><td>'+esc(p.phone||'—')+'</td><td><select onchange="statusLead('+i+',this.value)"><option '+(p.status==='Novo'?'selected':'')+'>Novo</option><option '+(p.status==='Contato feito'?'selected':'')+'>Contato feito</option><option '+(p.status==='Interessado'?'selected':'')+'>Interessado</option><option '+(p.status==='Fechado'?'selected':'')+'>Fechado</option></select></td><td><button class="btn secondary" onclick="removeLead('+i+')">Excluir</button></td></tr>').join('');
+ savedTable.innerHTML='<table class="table"><thead><tr><th>Empresa</th><th>Telefone</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function statusLead(i,v){saved[i].status=v;localStorage.setItem('paulinLeads',JSON.stringify(saved))}
+function removeLead(i){saved.splice(i,1);localStorage.setItem('paulinLeads',JSON.stringify(saved));renderSaved();sSaved.textContent=saved.length}
+function clearLeads(){if(confirm('Apagar todos os leads salvos?')){saved=[];localStorage.setItem('paulinLeads','[]');renderSaved();sSaved.textContent=0}}
+function saveConfig(){localStorage.setItem('paulinConfig',JSON.stringify({name:bizName.value,whats:bizWhats.value,msg:msg.value}));alert('Configuração salva neste dispositivo.')}
+function exportCSV(){
+ if(!saved.length)return alert('Salve alguns leads primeiro.');
+ let csv='Empresa;Endereço;Telefone;Site;Status\\n'+saved.map(x=>[x.name,x.address,x.phone,x.website,x.status].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\\n');
+ let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='paulinsolucoes-leads.csv';a.click();
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+let c=JSON.parse(localStorage.getItem('paulinConfig')||'{}');if(c.name)bizName.value=c.name;if(c.whats)bizWhats.value=c.whats;if(c.msg)msg.value=c.msg;
+sSaved.textContent=saved.length;
+</script>
+</body></html>
